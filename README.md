@@ -1,4 +1,4 @@
-# Loader
+# EzLoader
 
 ## ENV
 
@@ -9,7 +9,7 @@
 1. in command input `php vendor/wilkques/EzLoader/src/autoload_output.php` press enter
 1. add 
     ```php
-    include_once '<your app name>/vendor/wilkques/EzLoader/src/helpers.php';
+    require_once '<your app name>/vendor/wilkques/EzLoader/src/helpers.php';
 
     loadPHP();
     ```
