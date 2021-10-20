@@ -3,6 +3,10 @@
 namespace Wilkques\EzLoader;
 
 /**
+ * @see [wilkques](https://github.com/wilkques/EzLoader)
+ * 
+ * create by: wilkques
+ * 
  * support php >= 5.4
  */
 class Loader
@@ -22,7 +26,7 @@ class Loader
     {
         $classes = static::getClasses();
 
-        array_key_exists($class, $classes) && require_once $classes[$class];
+        array_key_exists($class, $classes) && require $classes[$class];
     }
 
     /**
@@ -40,7 +44,7 @@ class Loader
      */
     public static function getRequireMaps()
     {
-        $classesPath = dirname(__DIR__) . "/src/class_maps.php";
+        $classesPath = dirname(__FILE__) . "/class_maps.php";
 
         file_exists($classesPath) && static::$classes = require_once $classesPath;
     }
@@ -76,18 +80,16 @@ class Loader
     {
         !$dir && $dir = dirname(dirname(dirname(dirname(__DIR__))));
 
-        $files = static::requireMaps(static::getAllPHPPath($dir));
+        static::requireMaps(static::getAllPHPPath($dir));
 
-        $content = static::varexport($files);
+        $content = static::varexport(static::$classes);
 
         $fileContent = <<<EOF
 <?php
 
 \$serverRoot = dirname(dirname(dirname(dirname(__DIR__))));
 
-\$classes = $content;
-
-return \$classes;
+return $content;
 
 EOF;
 
@@ -97,36 +99,34 @@ EOF;
     /**
      * requre php file array
      * 
-     * @param array $paths
+     * @param array|string $paths
      * @param array $result
      * 
      * @return array
      */
-    protected static function requireMaps($paths, &$result = array())
+    protected static function requireMaps($path, &$result = array())
     {
         $serverRoot = dirname(dirname(dirname(dirname(__DIR__))));
 
         array_map(function ($item) use (&$result, $serverRoot) {
-            $results = [];
+            if (is_array($item)) {
+                static::requireMaps($item, $result);
 
-            is_array($item) && $results = static::requireMaps($item, $result);
-
-            $ary = array_intersect($result, $results);
-
-            if (!is_array($item) && !in_array($item, $result) || is_array($item) && empty($ary)) {
-                $documentDir = str_replace('/', '\/', $serverRoot);
-
-                preg_match("/($documentDir)\/(?:vendor\/|)([\w\/]+)/i", $item, $matches);
-
-                $path = preg_replace("/($documentDir)/i", '{$serverRoot}', $item);
-
-                $class = str_replace('/src', '', $matches[2]);
-
-                $result[ucfirst(str_replace('/', '\\', $class))] = $path;
+                return;
             }
-        }, $paths);
 
-        return $result;
+            $documentDir = str_replace('/', '\/', $serverRoot);
+
+            preg_match("/($documentDir)\/(?:vendor\/|)([\w\/]+)/i", $item, $matches);
+
+            $path = preg_replace("/($documentDir)/i", '{$serverRoot}', $item);
+
+            $class = str_replace('/src', '', $matches[2]);
+
+            $class = ucfirst(str_replace('/', '\\', $class));
+
+            static::$classes[$class] = $path;
+        }, $path);
     }
 
     /**
