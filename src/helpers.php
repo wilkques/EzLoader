@@ -38,5 +38,3 @@ if (!function_exists('ved')) {
         die;
     }
 }
-
-?>

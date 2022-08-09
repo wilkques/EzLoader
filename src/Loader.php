@@ -78,7 +78,7 @@ class Loader
      */
     public static function makeRequireMaps($dir = null)
     {
-        !$dir && $dir = dirname(dirname(dirname(dirname(__DIR__))));
+        !$dir && $dir = getcwd();
 
         static::requireMaps(static::getAllPHPPath($dir));
 
@@ -87,7 +87,7 @@ class Loader
         $fileContent = <<<EOF
 <?php
 
-\$serverRoot = dirname(dirname(dirname(dirname(__DIR__))));
+\$serverRoot = getcwd();
 
 return $content;
 
@@ -106,7 +106,7 @@ EOF;
      */
     protected static function requireMaps($path, &$result = array())
     {
-        $serverRoot = dirname(dirname(dirname(dirname(__DIR__))));
+        $serverRoot = getcwd();
 
         array_map(function ($item) use (&$result, $serverRoot) {
             if (is_array($item)) {
